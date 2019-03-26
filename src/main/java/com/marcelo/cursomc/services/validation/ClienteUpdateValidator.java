@@ -2,45 +2,44 @@ package com.marcelo.cursomc.services.validation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.servlet.HandlerMapping;
 
 import com.marcelo.cursomc.domain.Cliente;
-import com.marcelo.cursomc.domain.enums.TipoCliente;
-import com.marcelo.cursomc.dto.ClienteNewDTO;
+import com.marcelo.cursomc.dto.ClienteDTO;
 import com.marcelo.cursomc.repositories.ClienteRepository;
 import com.marcelo.cursomc.resources.exceptions.FieldMessage;
-import com.marcelo.cursomc.services.validation.utils.BR;
 
-public class ClienteInsertValidator implements ConstraintValidator<ClienteInsert, ClienteNewDTO>
+public class ClienteUpdateValidator implements ConstraintValidator<ClienteUpdate, ClienteDTO>
 {
+	@Autowired
+	private HttpServletRequest request;
+	
 	@Autowired
 	private ClienteRepository repo;
 	
 	@Override
-	public void initialize(ClienteInsert ann)
+	public void initialize(ClienteUpdate ann)
 	{
 	}
 
 	@Override
-	public boolean isValid(ClienteNewDTO clienteNewDTO, ConstraintValidatorContext context)
+	public boolean isValid(ClienteDTO clienteDTO, ConstraintValidatorContext context)
 	{
+		@SuppressWarnings("unchecked")
+		Map<String, String> map = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+		Integer uriId = Integer.parseInt( map.get("id") );
 		List<FieldMessage> list = new ArrayList<>();
 		// inclua os testes aqui, inserindo erros na lista
-		if(clienteNewDTO.getTipo().equals(TipoCliente.PESSOAFISICA.getCod()) && !BR.isValidCPF(clienteNewDTO.getCpfOuCnpj()))
-		{
-			list.add(new FieldMessage("cpfOuCnpj", "CPF inválido"));
-		}
-		if(clienteNewDTO.getTipo().equals(TipoCliente.PESSOAJURIDICA.getCod()) && !BR.isValidCNPJ(clienteNewDTO.getCpfOuCnpj()))
-		{
-			list.add(new FieldMessage("cpfOuCnpj", "CNPJ inválido"));
-		}
 		
-		Cliente clienteAux = repo.findByEmail(clienteNewDTO.getEmail());
-		if (clienteAux != null) {
+		Cliente clienteAux = repo.findByEmail(clienteDTO.getEmail());
+		if ( clienteAux != null &&  !clienteAux.getId().equals(uriId)) {
 			list.add(new FieldMessage("email", "Email já existente"));
 		}
 		
