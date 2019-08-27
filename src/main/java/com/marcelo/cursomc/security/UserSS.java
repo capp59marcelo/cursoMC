@@ -13,15 +13,16 @@ import com.marcelo.cursomc.domain.enums.Perfil;
 public class UserSS implements UserDetails
 {
 	private static final long serialVersionUID = 1L;
-	
+
 	private Integer id;
 	private String email;
 	private String senha;
 	private Collection<? extends GrantedAuthority> authorities;
-	
-	
-	public UserSS() {}
-	
+
+	public UserSS()
+	{
+	}
+
 	public UserSS(Integer id, String email, String senha, Set<Perfil> perfils)
 	{
 		super();
@@ -29,7 +30,7 @@ public class UserSS implements UserDetails
 		this.email = email;
 		this.senha = senha;
 		this.authorities = perfils.stream().map(perfil -> new SimpleGrantedAuthority(perfil.getDescricao())).collect(Collectors.toList());
-		
+
 	}
 
 	public Integer getId()
@@ -77,6 +78,11 @@ public class UserSS implements UserDetails
 	public boolean isEnabled()
 	{
 		return true;
+	}
+
+	public boolean hasRole(Perfil perfil)
+	{
+		return getAuthorities().contains(new SimpleGrantedAuthority(perfil.getDescricao()));
 	}
 
 }
